@@ -254,10 +254,10 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
 
             # Learn agents
             for id_d, drone in enumerate(env.agents):
-                drone.learn(old_obs[id_d], new_obs[id_d], [l_rate, discount, reward, actions_array[id_d]])
+                drone.learn(old_obs[id_d], new_obs[id_d], [l_rate, discount, reward[id_d], actions_array[id_d]])
 
             # Select the best scenario
-            actual_scenario = [reward, 'actual']
+            actual_scenario = [sum(reward), 'actual']
             both_scenario = [best_scenario, actual_scenario]
             s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
 
