@@ -437,8 +437,13 @@ class MultiDroneEnv(gym.Env):
         Returns:
             Reward scenario
         """
+        reward = []
         r_min = 180e03 * np.log2(1 + np.power(10, self._threshold / 10))  # Minimum throughput threshold
-        return (self.weight['Wu'] * self.calc_users_connected) + (self.weight['Wt'] * ((worse_th - r_min) / r_min))
+        for id_x, agent in enumerate(self.agents):
+            reward.append((self.weight['Wu'] * agent.get_len_users) + \
+                          (self.weight['Wt'] * ((worse_th[id_x] - r_min) / r_min)))
+
+        return reward
 
     @property
     def calc_users_connected(self):
@@ -638,16 +643,20 @@ class MultiDroneEnv(gym.Env):
 
     def _search_worse_user(self):
 
-        dict_user = {}
-        for idx, user in enumerate(self.user_list):
-            if user.throughput != 0:
-                dict_user[idx] = user.throughput
-        sorted_dict = {k: v for k, v in sorted(dict_user.items(), key=lambda item: item[1])}  # Order dict
-        idx = list(sorted_dict.values())
-        if len(idx) == 0:
-            return 0
-        else:
-            return idx[0]
+        worse_list = []
+        for agent in self.agents:
+            dict_user = {}
+            for i, idx_user in enumerate(agent.users):
+                if self.user_list[idx_user].throughput != 0:
+                    dict_user[i] = self.user_list[idx_user].throughput
+            sorted_dict = {k: v for k, v in sorted(dict_user.items(), key=lambda item: item[1])}  # Order dict
+            idx = list(sorted_dict.values())
+            if len(idx) == 0:
+                worse_list.append(0)
+            else:
+                worse_list.append(idx[0])
+
+        return worse_list
 
 
 class User:
