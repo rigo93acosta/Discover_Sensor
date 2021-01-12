@@ -437,11 +437,8 @@ class MultiDroneEnv(gym.Env):
         Returns:
             Reward scenario
         """
-        active_drones = sum([1 for drone in self.agents if drone.status_tx])
         r_min = 180e03 * np.log2(1 + np.power(10, self._threshold / 10))  # Minimum throughput threshold
-        return (self.weight['Wu'] * self.calc_users_connected) - \
-               (self.weight['Wd'] * (active_drones / len(self.agents))) + \
-               (self.weight['Wt'] * ((worse_th - r_min) / r_min))
+        return (self.weight['Wu'] * self.calc_users_connected) + (self.weight['Wt'] * ((worse_th - r_min) / r_min))
 
     @property
     def calc_users_connected(self):
