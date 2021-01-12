@@ -53,11 +53,12 @@ class MultiDroneEnv(gym.Env):
             temp_user.position = [temp_position_user[index_user][0], temp_position_user[index_user][1], 0]
             self.user_list.append(temp_user)
 
-        for drone in self.agents:
-            temp_state = drone.observation_space.sample()
-            drone.position = [temp_state['position'][0] * 50,
-                              temp_state['position'][1] * 50,
-                              (temp_state['position'][2] + 1) * 100]
+        altitude = [400, 500, 600, 700, 800, 900]
+        for id_drone, drone in enumerate(self.agents):
+            # temp_state = drone.observation_space.sample()
+            drone.position = [250,
+                              250,
+                              altitude[id_drone]]
 
         return self._get_obs
 
