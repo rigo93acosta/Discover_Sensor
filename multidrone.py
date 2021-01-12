@@ -52,12 +52,13 @@ class MultiDroneEnv(gym.Env):
             temp_user = User(name='User_' + str(index_user + 1), init_req_th=0)
             temp_user.position = [temp_position_user[index_user][0], temp_position_user[index_user][1], 0]
             self.user_list.append(temp_user)
-
-        for drone in self.agents:
-            temp_state = drone.observation_space.sample()
-            drone.position = [temp_state['position'][0] * 50,
-                              temp_state['position'][1] * 50,
-                              (temp_state['position'][2] + 1) * 100]
+        
+        altitude = [400, 500, 600, 700, 800, 900]
+        for id_drone, drone in enumerate(self.agents):
+            # temp_state = drone.observation_space.sample()
+            drone.position = [250,
+                              250,
+                              altitude[id_drone]]
 
         return self._get_obs
 
@@ -437,11 +438,8 @@ class MultiDroneEnv(gym.Env):
         Returns:
             Reward scenario
         """
-        active_drones = sum([1 for drone in self.agents if drone.status_tx])
         r_min = 180e03 * np.log2(1 + np.power(10, self._threshold / 10))  # Minimum throughput threshold
-        return (self.weight['Wu'] * self.calc_users_connected) - \
-               (self.weight['Wd'] * (active_drones / len(self.agents))) + \
-               (self.weight['Wt'] * ((worse_th - r_min) / r_min))
+        return (self.weight['Wu'] * self.calc_users_connected) + (self.weight['Wt'] * ((worse_th - r_min) / r_min))
 
     @property
     def calc_users_connected(self):
