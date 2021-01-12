@@ -237,63 +237,62 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
 
     for episode in range(n_episodes):
         efficiency = []
-        for iteration in count():
+        for id_drone, drone in enumerate(env.agents):
+            for iteration in count():
 
-            if not ep_greedy:
-                env.epsilon = np.exp(-iteration / 5)
+                if not ep_greedy:
+                    env.epsilon = np.exp(-iteration / 5)
 
-            # Choice action
-            actions_array = []  # Action selected
-            actions_val_array = []  # Action validated
-            for id_d, drone in enumerate(env.agents):
-                action_ok, action_selected = drone.choice_action(old_obs[id_d], env.epsilon)
-                actions_array.append(action_selected)
-                actions_val_array.append(action_ok)
+                # Choice action
+                actions_array = [uavs.actions.stop for uavs in env.agents]  # Action selected
+                actions_val_array = actions_array.copy()  # TODO: Action validated
+                action_ok, action_selected = drone.choice_action(old_obs[id_drone], env.epsilon)
+                actions_array[id_drone] = action_selected
+                actions_val_array[id_drone] = action_ok
 
-            reward, new_obs, done, _ = env.step(actions_val_array)
+                reward, new_obs, done, _ = env.step(actions_val_array)
 
-            # Learn agents
-            for id_d, drone in enumerate(env.agents):
-                drone.learn(old_obs[id_d], new_obs[id_d], [l_rate, discount, reward, actions_array[id_d]])
+                # Learn agents
+                drone.learn(old_obs[id_drone], new_obs[id_drone], [l_rate, discount, reward, actions_array[id_drone]])
 
-            # Select the best scenario
-            actual_scenario = [reward, 'actual']
-            both_scenario = [best_scenario, actual_scenario]
-            s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
+                # Select the best scenario
+                actual_scenario = [reward, 'actual']
+                both_scenario = [best_scenario, actual_scenario]
+                s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
 
-            # Update Criteria
-            if s_f[0][1] == 'actual':
-                best_scenario.clear()
-                best_scenario = actual_scenario.copy()
-                best_scenario[1] = 'best'
-                equal_rew = 0
-                for drone in env.agents:
-                    drone.save_best()
-                for user in env.user_list:
-                    user.save_best()
-            else:
-                equal_rew += 1
-            # Update observation spaces
-            old_obs = new_obs.copy()
+                # Update Criteria
+                if s_f[0][1] == 'actual':
+                    best_scenario.clear()
+                    best_scenario = actual_scenario.copy()
+                    best_scenario[1] = 'best'
+                    equal_rew = 0
+                    for uav in env.agents:
+                        uav.save_best()
+                    for user in env.user_list:
+                        user.save_best()
+                else:
+                    equal_rew += 1
+                # Update observation spaces
+                old_obs = new_obs.copy()
 
-            # Calculate Energy consumption
-            # energy, power, time_tx = env.model_energy(velocity)
-            energy_iter_episode += env.model_dict.energy
-            power_iter_episode += env.model_dict.power
-            time_tx_iter_episode += env.model_dict.time_tx
-            efficiency.append(env.model_dict.efficiency)
-            # Stopping Criteria
-            # First Condition
-            if iteration == num_iter_per_episode - 1:
-                break
+                # Calculate Energy consumption
+                # energy, power, time_tx = env.model_energy(velocity)
+                energy_iter_episode += env.model_dict.energy
+                power_iter_episode += env.model_dict.power
+                time_tx_iter_episode += env.model_dict.time_tx
+                efficiency.append(env.model_dict.efficiency)
+                # Stopping Criteria
+                # First Condition
+                if iteration == num_iter_per_episode - 1:
+                    break
 
-            # Second Condition
-            if equal_rew == num_max_iter_same_rew - 1:
-                break
+                # Second Condition
+                if equal_rew == num_max_iter_same_rew - 1:
+                    break
 
-            # New Condition
-            if done:
-                break
+                # New Condition
+                if done:
+                    break
 
         # All Iterations End
         equal_rew = 0
