@@ -340,7 +340,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         energy_iter_episode = 0
         power_iter_episode = 0
         time_tx_iter_episode = 0
-        env.move_user()  # User movement
+        # env.move_user()  # User movement
 
     # All Episodes End
     metric.extra_metric(f'{env.dir_sim}', env.agents, n_episodes)
@@ -369,7 +369,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--show', help='Show render environment', type=int, default=0)
     args = parser.parse_args()
 
-    weight = {
+    weight_parser = {
         'Wu': args.weight_user,
         'Wd': args.weight_drone,
         'Wt': args.weight_connection
@@ -393,7 +393,7 @@ if __name__ == '__main__':
     copy(main_chapter + f'/mapa.pickle', now_chapter + f'/mapa.pickle')
 
     Parallel(n_jobs=args.thread)(delayed(function_simulation)(i, args.episodes, args.greedy, args.drone, args.frequency,
-                                                              args.mail, args.users, weight, args.show)
+                                                              args.mail, args.users, weight_parser, args.show)
                                  for i in trange(args.run, desc='Runs', ascii=True))
     fig_6(args.run)
     fig_11(args.run)

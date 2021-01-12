@@ -9,7 +9,11 @@ from collections import namedtuple
 from e_model import EnergyModel
 
 matplotlib.use("Agg")
-
+matplotlib.rcParams['axes.labelsize'] = 16
+matplotlib.rcParams['axes.titlesize'] = 18
+matplotlib.rcParams['xtick.labelsize'] = 'large'
+matplotlib.rcParams['ytick.labelsize'] = 'large'
+# plt.rcParams['ztick.labelsize'] = 18
 
 with open('mapa.pickle', 'rb') as f:
     info = pickle.load(f)
@@ -137,23 +141,23 @@ class MultiDroneEnv(gym.Env):
             if len(dron.users) != 0 and dron.status_tx:
                 lstconected.extend(dron.users)
                 ax.scatter(user_x[dron.users], user_y[dron.users],
-                           s=40, marker='o', color=self._set_colors(id_d))
+                           s=40, marker='o', color=self._set_colors(id_d), depthshade=False)
 
             values_text = self._freq_string(dron.freq_tx)
             marker_tips = ['^', 'X', 'D', 'o', 's', '*']
             if dron.status_tx:
-                legend_text = 'Altitude:{}m\nFrequency:{}'.format(dron.position[2], values_text)
+                legend_text = 'A: {}m\nF: {} U: {}'.format(dron.position[2], values_text, dron.get_len_users)
             else:
-                legend_text = 'Altitude:{}m\nDrone status OFF'.format(dron.position[2])
+                legend_text = 'A: {}m\nOFF'.format(dron.position[2])
 
             if dron.status_tx:
                 label_text = ax.scatter(dron_x[id_d], dron_y[id_d], dron_z[id_d], s=150,
                                         marker=marker_tips[frequency_index[id_d]], color=self._set_colors(id_d),
-                                        label=legend_text)
+                                        label=legend_text, depthshade=False)
             else:
                 label_text = ax.scatter(dron_x[id_d], dron_y[id_d], dron_z[id_d], s=150,
                                         marker=marker_tips[frequency_index[id_d]], color='k',
-                                        label=legend_text)
+                                        label=legend_text, depthshade=False)
 
             labels_drone.append(label_text)
             users_connect += dron.get_len_users
@@ -165,7 +169,7 @@ class MultiDroneEnv(gym.Env):
         desconectados = set(range(self.total_user))
         lstconected = set(lstconected)
         desconectados = list(desconectados.difference(lstconected))
-        ax.scatter(user_x[desconectados], user_y[desconectados], s=40, marker='x', color='k')
+        ax.scatter(user_x[desconectados], user_y[desconectados], s=40, marker='x', color='k', depthshade=False)
 
         try:
             os.mkdir(self.output_chapter)
@@ -186,9 +190,9 @@ class MultiDroneEnv(gym.Env):
         ax.set_zlim3d(0, 2 * info['L'])
         ax.view_init(elev=25, azim=-45)
         ax.set_title(f'User connect {users_connect} - Active drones {enable_drones}')
-        fig.legend(loc=7)
+        fig.legend(loc=7, prop={'weight': 'bold', 'size': 14})
         fig.tight_layout()
-        fig.subplots_adjust(right=0.87)
+        fig.subplots_adjust(right=0.88)
         canvas.draw()
 
         # array_fig = np.array(fig.canvas.renderer.buffer_rgba())
@@ -435,8 +439,8 @@ class MultiDroneEnv(gym.Env):
         """
         active_drones = sum([1 for drone in self.agents if drone.status_tx])
         r_min = 180e03 * np.log2(1 + np.power(10, self._threshold / 10))  # Minimum throughput threshold
-        return (self.weight['Wu'] * self.calc_users_connected) + \
-               (self.weight['Wd'] * ((len(self.agents) - active_drones) / len(self.agents))) + \
+        return (self.weight['Wu'] * self.calc_users_connected) - \
+               (self.weight['Wd'] * (active_drones / len(self.agents))) + \
                (self.weight['Wt'] * ((worse_th - r_min) / r_min))
 
     @property
@@ -526,7 +530,7 @@ class MultiDroneEnv(gym.Env):
         values_dict = {'03': 'KHz', '06': 'MHz', '09': 'GHz'}
         out_values = func_text(frequency).split('E+')
         out_values[1] = values_dict[out_values[1]]
-        return out_values[0] + out_values[1]
+        return out_values[0]  # + out_values[1]
 
     # Users deployment
     @property
@@ -629,7 +633,7 @@ class MultiDroneEnv(gym.Env):
             u_t = agent.get_len_users
             for idx_user in agent.users:
                 t_g += self.user_list[idx_user].throughput
-                
+
             efficiency[idx_agent] = ((self.weight['Wu'] * u_t * r_min) +
                                      (self.weight['Wt'] * (t_g - u_t * r_min))) / list_energy[idx_agent]
 
