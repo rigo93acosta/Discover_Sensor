@@ -40,7 +40,7 @@ def send_mail(name_simulation='Test'):
     msg['Subject'] = f'{name_simulation} Simulation End'
     msg.attach(MIMEText("End Simulation"))
     files_list = ['fig_6.pickle', 'fig_11.pickle', 'fig_12.pickle', 'fig_battery.pickle', 'fig_status.pickle',
-                  'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle', 'fig_actions']
+                  'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle']
     for f in files_list:
         with open(f, "rb") as fil:
             ext = f.split('.')[-1:]
@@ -216,7 +216,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     else:  # e-greedy fixed value
         epsilon = ep_greedy
 
-    env = MultiDroneEnv(agents, frequency=frequency_list, n_users=n_users, weight=weight)
+    env = MultiDroneEnv(agents, frequency=frequency_list, n_users=n_users, weight=weight, n_run=run_i)
 
     actions_name = []
     for action_name in agents[0].actions:
@@ -403,6 +403,7 @@ if __name__ == '__main__':
 
     now_chapter = os.getcwd()
     copy(main_chapter + f'/mapa.pickle', now_chapter + f'/mapa.pickle')
+    copy(main_chapter + f'/users_d.pickle', now_chapter + f'/users_d.pickle')
 
     Parallel(n_jobs=args.thread)(delayed(function_simulation)(i, args.episodes, args.greedy, args.drone, args.frequency,
                                                               args.mail, args.users, weight_parser, args.show)

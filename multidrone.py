@@ -18,10 +18,13 @@ matplotlib.rcParams['ytick.labelsize'] = 'large'
 with open('mapa.pickle', 'rb') as f:
     info = pickle.load(f)
 
+with open('users_d.pickle', 'rb') as f:
+    user_distribution = pickle.load(f)
+
 
 class MultiDroneEnv(gym.Env):
 
-    def __init__(self, agents, n_users=300, frequency=None, weight=1):
+    def __init__(self, agents, n_users=300, frequency=None, weight=1, n_run=0):
 
         if frequency is None:
             frequency = [1e09]
@@ -39,6 +42,7 @@ class MultiDroneEnv(gym.Env):
         self.val_velocity = 0
         self._threshold = -3
         self.model_dict = namedtuple('Model', 'energy power time_tx efficiency')
+        self.simulation_run = n_run
 
     def reset(self):
         """
@@ -47,7 +51,8 @@ class MultiDroneEnv(gym.Env):
         Returns:
             States drones
         """
-        temp_position_user = self._create_users
+        # temp_position_user = self._create_users
+        temp_position_user = user_distribution[self.simulation_run]
         for index_user in range(self.total_user):
             temp_user = User(name='User_' + str(index_user + 1), init_req_th=0)
             temp_user.position = [temp_position_user[index_user][0], temp_position_user[index_user][1], 0]
