@@ -216,7 +216,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     else:  # e-greedy fixed value
         epsilon = ep_greedy
 
-    env = MultiDroneEnv(agents, frequency=frequency_list, n_users=n_users, weight=weight)
+    env = MultiDroneEnv(agents, frequency=frequency_list, n_users=n_users, weight=weight, n_run=run_i)
 
     actions_name = []
     for action_name in agents[0].actions:
@@ -246,7 +246,10 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     best_rew = 0
     iter_x_episode = []
     iteration = 0
-
+    
+    for drone in env.agents:
+        drone.save_best()
+        
     for episode in range(n_episodes):
         efficiency = []
         for id_drone, drone in enumerate(env.agents):
@@ -269,21 +272,20 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
                             [l_rate, discount, reward[id_drone], actions_array[id_drone]])
 
                 # Select the best scenario
-                for id_d, uav in enumerate(env.agents):
-                    actual_scenario = [reward[id_d], 'actual']
-                    both_scenario = [best_scenario[id_d], actual_scenario]
-                    s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
-                    # Update Criteria
-                    if s_f[0][1] == 'actual':
-                        best_scenario[id_d].clear()
-                        best_scenario[id_d] = actual_scenario.copy()
-                        best_scenario[id_d][1] = 'best'
-                        uav.save_best()
-                        for user in env.user_list:
-                            user.save_best()
+                actual_scenario = [reward[id_drone], 'actual']
+                both_scenario = [best_scenario[id_drone], actual_scenario]
+                s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
+                # Update Criteria
+                if s_f[0][1] == 'actual':
+                    #best_scenario[id_drone].clear()
+                    best_scenario[id_drone] = actual_scenario.copy()
+                    best_scenario[id_drone][1] = 'best'
+                    drone.save_best()
+                    for user in env.user_list:
+                        user.save_best()
 
-                if best_rew < sum(reward):
-                    best_rew = sum(reward)
+                if best_rew < reward[id_drone]:
+                    best_rew = reward[id_drone]
                     equal_rew = 0
                 else:
                     equal_rew += 1
@@ -413,6 +415,7 @@ if __name__ == '__main__':
 
     now_chapter = os.getcwd()
     copy(main_chapter + f'/mapa.pickle', now_chapter + f'/mapa.pickle')
+    copy(main_chapter + f'/users_d.pickle', now_chapter + f'/users_d.pickle')
 
     Parallel(n_jobs=args.thread)(delayed(function_simulation)(i, args.episodes, args.greedy, args.drone, args.frequency,
                                                               args.mail, args.users, weight_parser, args.show)
