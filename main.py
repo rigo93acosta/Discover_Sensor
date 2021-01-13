@@ -278,7 +278,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
                     best_scenario[id_d].clear()
                     best_scenario[id_d] = actual_scenario.copy()
                     best_scenario[id_d][1] = 'best'
-                    env.agents[id_d].save_best()
+                    drone.save_best()
                     for user in env.user_list:
                         user.save_best()
 
@@ -314,9 +314,9 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         equal_rew = 0
         iter_x_episode.append(iteration)
         # Load best scenario
-        save_pos = []
-        for drone in env.agents:
-            save_pos.append(drone.pos.copy())
+#         save_pos = []
+#         for drone in env.agents:
+#             save_pos.append(drone.pos.copy())
 
         for drone in env.agents:
             drone.load_best()

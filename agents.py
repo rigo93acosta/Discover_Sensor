@@ -248,9 +248,9 @@ class Drone:
         """
         Save best scenario
         """
-        self.save_dict['save_users'].clear()
+#         self.save_dict['save_users'].clear()
         self.save_dict['save_users'] = self.users.copy()
-        self.save_dict['save_position'].clear()
+#         self.save_dict['save_position'].clear()
         self.save_dict['save_position'] = self.pos.copy()
         self.save_dict['save_status'] = self.status_tx
         self.save_dict['save_freq'] = self.freq_tx
@@ -259,9 +259,9 @@ class Drone:
         """
         Load best scenario
         """
-        self.users.clear()
+#         self.users.clear()
         self.users = self.save_dict['save_users'].copy()
-        self.pos.clear()
+#         self.pos.clear()
         self.pos = self.save_dict['save_position'].copy()
         self.status_tx = self.save_dict['save_status']
         self.freq_tx = self.save_dict['save_freq']
