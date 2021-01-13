@@ -241,8 +241,9 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     power_iter_episode = 0
     time_tx_iter_episode = 0
     env.val_velocity = 10  # 10 m/s
-    best_scenario = [0, 'best']
+    best_scenario = [[0, 'best'] for _ in env.agents]
     equal_rew = 0
+    best_rew = 0
     iter_x_episode = []
     iteration = 0
 
@@ -268,22 +269,25 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
                 drone.learn(old_obs[id_d], new_obs[id_d], [l_rate, discount, reward[id_d], actions_array[id_d]])
 
             # Select the best scenario
-            actual_scenario = [sum(reward), 'actual']
-            both_scenario = [best_scenario, actual_scenario]
-            s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
+            for id_d, drone in enumerate(env.agents):
+                actual_scenario = [reward[id_d], 'actual']
+                both_scenario = [best_scenario[id_d], actual_scenario]
+                s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
+                # Update Criteria
+                if s_f[0][1] == 'actual':
+                    best_scenario[id_d].clear()
+                    best_scenario[id_d] = actual_scenario.copy()
+                    best_scenario[id_d][1] = 'best'
+                    env.agents[id_d].save_best()
+                    for user in env.user_list:
+                        user.save_best()
 
-            # Update Criteria
-            if s_f[0][1] == 'actual':
-                best_scenario.clear()
-                best_scenario = actual_scenario.copy()
-                best_scenario[1] = 'best'
+            if best_rew < sum(reward):
+                best_rew = sum(reward)
                 equal_rew = 0
-                for drone in env.agents:
-                    drone.save_best()
-                for user in env.user_list:
-                    user.save_best()
             else:
                 equal_rew += 1
+
             # Update observation spaces
             old_obs = new_obs.copy()
 
@@ -329,6 +333,12 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         #     power_iter_episode += env.calc_power(velocity=velocity)
 
         # Update metrics
+        for user in env.user_list:
+            user.connection = False
+            user.index_dron = None
+        for drone in env.agents:
+            drone.users.clear()
+
         zero_actions = (np.ones(len(env.agents), dtype='int') * agents[0].actions.stop).tolist()
         reward, new_obs, done, _ = env.step(zero_actions)
 
