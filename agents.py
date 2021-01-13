@@ -18,9 +18,8 @@ class Drone:
         forw = 4  # Drone move forward
         back = 5  # Drone move backward
         stop = 6  # Drone not move
-        change = 7  # Changed frequency
-        on = 8  # Drone on
-        off = 9  # Drone off
+        on = 7  # Drone on
+        off = 8  # Drone off
 
     def __init__(self, frequency):
         self.pos = []
@@ -164,8 +163,8 @@ class Drone:
         elif action == self.actions.on:  # Turn on
             action_back = action
 
-        elif action == self.actions.change:  # Changed frequency
-            action_back = action
+        # elif action == self.actions.change:  # Changed frequency
+        #     action_back = action
 
         return action_back
 
@@ -235,13 +234,13 @@ class Drone:
             self.distance.horizontal = 0
             self.distance.vertical = 0
 
-        elif value == self.actions.change:
-            index = self.all_freq.index(self.freq_tx)
-            index += 1
-            index %= len(self.all_freq)
-            self.freq_tx = self.all_freq[index]
-            self.distance.horizontal = 0
-            self.distance.vertical = 0
+        # elif value == self.actions.change:
+        #     index = self.all_freq.index(self.freq_tx)
+        #     index += 1
+        #     index %= len(self.all_freq)
+        #     self.freq_tx = self.all_freq[index]
+        #     self.distance.horizontal = 0
+        #     self.distance.vertical = 0
 
         self.shift.append(value)
 
@@ -249,9 +248,9 @@ class Drone:
         """
         Save best scenario
         """
-        self.save_dict['save_users'].clear()
+        # self.save_dict['save_users'].clear()
         self.save_dict['save_users'] = self.users.copy()
-        self.save_dict['save_position'].clear()
+        # self.save_dict['save_position'].clear()
         self.save_dict['save_position'] = self.pos.copy()
         self.save_dict['save_status'] = self.status_tx
         self.save_dict['save_freq'] = self.freq_tx
@@ -260,9 +259,9 @@ class Drone:
         """
         Load best scenario
         """
-        self.users.clear()
+        # self.users.clear()
         self.users = self.save_dict['save_users'].copy()
-        self.pos.clear()
+        # self.pos.clear()
         self.pos = self.save_dict['save_position'].copy()
         self.status_tx = self.save_dict['save_status']
         self.freq_tx = self.save_dict['save_freq']

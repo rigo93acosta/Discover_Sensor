@@ -40,7 +40,7 @@ def send_mail(name_simulation='Test'):
     msg['Subject'] = f'{name_simulation} Simulation End'
     msg.attach(MIMEText("End Simulation"))
     files_list = ['fig_6.pickle', 'fig_11.pickle', 'fig_12.pickle', 'fig_battery.pickle', 'fig_status.pickle',
-                  'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle', 'fig_actions']
+                  'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle']
     for f in files_list:
         with open(f, "rb") as fil:
             ext = f.split('.')[-1:]
@@ -241,8 +241,9 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     power_iter_episode = 0
     time_tx_iter_episode = 0
     env.val_velocity = 10  # 10 m/s
-    best_scenario = [0, 'best']
+    best_scenario = [[0, 'best'] for _ in env.agents]
     equal_rew = 0
+    best_rew = 0
     iter_x_episode = []
     iteration = 0
 
@@ -268,22 +269,25 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
                             [l_rate, discount, reward[id_drone], actions_array[id_drone]])
 
                 # Select the best scenario
-                actual_scenario = [sum(reward), 'actual']
-                both_scenario = [best_scenario, actual_scenario]
-                s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
-
-                # Update Criteria
-                if s_f[0][1] == 'actual':
-                    best_scenario.clear()
-                    best_scenario = actual_scenario.copy()
-                    best_scenario[1] = 'best'
-                    equal_rew = 0
-                    for uav in env.agents:
+                for id_d, uav in enumerate(env.agents):
+                    actual_scenario = [reward[id_d], 'actual']
+                    both_scenario = [best_scenario[id_d], actual_scenario]
+                    s_f = sorted(both_scenario, key=itemgetter(0), reverse=True)
+                    # Update Criteria
+                    if s_f[0][1] == 'actual':
+                        best_scenario[id_d].clear()
+                        best_scenario[id_d] = actual_scenario.copy()
+                        best_scenario[id_d][1] = 'best'
                         uav.save_best()
-                    for user in env.user_list:
-                        user.save_best()
+                        for user in env.user_list:
+                            user.save_best()
+
+                if best_rew < sum(reward):
+                    best_rew = sum(reward)
+                    equal_rew = 0
                 else:
                     equal_rew += 1
+
                 # Update observation spaces
                 old_obs = new_obs.copy()
 
@@ -310,9 +314,9 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         equal_rew = 0
         iter_x_episode.append(iteration)
         # Load best scenario
-        save_pos = []
-        for drone in env.agents:
-            save_pos.append(drone.pos.copy())
+        # save_pos = []
+        # for drone in env.agents:
+        #     save_pos.append(drone.pos.copy())
 
         for drone in env.agents:
             drone.load_best()
@@ -329,6 +333,12 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         #     power_iter_episode += env.calc_power(velocity=velocity)
 
         # Update metrics
+        for user in env.user_list:
+            user.connection = False
+            user.index_dron = None
+        for drone in env.agents:
+            drone.users.clear()
+
         zero_actions = (np.ones(len(env.agents), dtype='int') * agents[0].actions.stop).tolist()
         reward, new_obs, done, _ = env.step(zero_actions)
 
