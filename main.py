@@ -10,7 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 from os.path import basename
 import smtplib
-from tqdm.auto import trange
+import time
 
 import imageio
 import matplotlib.pyplot as plt
@@ -20,6 +20,16 @@ import numpy as np
 from agents import Drone
 from metric import Metric
 from multidrone import MultiDroneEnv
+
+
+class Progress:
+
+    def __init__(self, initial):
+        self.initial_time = initial
+
+    def show(self, time_now, users, n_sim):
+        print(f'End Run {n_sim:2d} -- Time:{(time_now - self.initial_time):.2f} '
+              f's -- Users Connected {users}')
 
 
 def send_mail(name_simulation='Test'):
@@ -195,6 +205,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     """
     Simulation drone environment using Q-Learning
     """
+    progress = Progress(time.time())
     frequency_list = [float(item) for item in frequency.split(',')]
     agents = [Drone(frequency_list) for _ in range(n_agents)]
     for index, agent in enumerate(agents):
@@ -205,7 +216,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     else:  # e-greedy fixed value
         epsilon = ep_greedy
 
-    env = MultiDroneEnv(agents, frequency=frequency_list, n_users=n_users, weight=weight)
+    env = MultiDroneEnv(agents, frequency=frequency_list, n_users=n_users, weight=weight, n_run=run_i)
 
     actions_name = []
     for action_name in agents[0].actions:
@@ -345,6 +356,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     metric.extra_metric(f'{env.dir_sim}', env.agents, n_episodes)
     metric.save_metric(run_i)
     show_iter(iter_x_episode, n_episodes, run_i)
+    progress.show(time.time(), env.calc_users_connected, run_i)
     if mail:
         if run_i % 10 == 0:
             mail_end_episode(run_i)
@@ -390,10 +402,11 @@ if __name__ == '__main__':
 
     now_chapter = os.getcwd()
     copy(main_chapter + f'/mapa.pickle', now_chapter + f'/mapa.pickle')
+    copy(main_chapter + f'/users_d.pickle', now_chapter + f'/users_d.pickle')
 
     Parallel(n_jobs=args.thread)(delayed(function_simulation)(i, args.episodes, args.greedy, args.drone, args.frequency,
                                                               args.mail, args.users, weight_parser, args.show)
-                                 for i in trange(args.run, desc='Runs', ascii=True))
+                                 for i in range(args.run))
     fig_6(args.run)
     fig_11(args.run)
     fig_12(args.run)
