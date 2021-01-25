@@ -201,7 +201,7 @@ def fig_energy(total_run):
 
 
 def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequency="1e09", mail=False, n_users=200,
-                        weight=1, s_render=0):
+                        weight=1, s_render=0, distribution='cluster'):
     """
     Simulation drone environment using Q-Learning
     """
@@ -217,7 +217,7 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         epsilon = ep_greedy
 
     env = MultiDroneEnv(agents, frequency=frequency_list, n_users=n_users, weight=weight, n_run=run_i)
-
+    env.info = distribution
     actions_name = []
     for action_name in agents[0].actions:
         actions_name.append(action_name.name)
@@ -246,6 +246,9 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     best_rew = 0
     iter_x_episode = []
     iteration = 0
+
+    for agent in env.agents:
+        agent.save_best()
 
     for episode in range(n_episodes):
         efficiency = []
@@ -389,6 +392,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--frequency', help="List with operations frequencies", type=str, default="1e09")
     parser.add_argument('-t', '--thread', help='Number thread', type=int, default=1)
     parser.add_argument('-s', '--show', help='Show render environment', type=int, default=0)
+    parser.add_argument('-i', '--info', help="Name of an environment", default='cluster')
     args = parser.parse_args()
 
     weight_parser = {
@@ -413,10 +417,11 @@ if __name__ == '__main__':
 
     now_chapter = os.getcwd()
     copy(main_chapter + f'/mapa.pickle', now_chapter + f'/mapa.pickle')
-    copy(main_chapter + f'/users_d.pickle', now_chapter + f'/users_d.pickle')
+    copy(main_chapter + f'/users_d_{args.info}.pickle', now_chapter + f'/users_d_{args.info}.pickle')
 
     Parallel(n_jobs=args.thread)(delayed(function_simulation)(i, args.episodes, args.greedy, args.drone, args.frequency,
-                                                              args.mail, args.users, weight_parser, args.show)
+                                                              args.mail, args.users, weight_parser,
+                                                              args.show, args.info)
                                  for i in range(args.run))
     fig_6(args.run)
     fig_11(args.run)
