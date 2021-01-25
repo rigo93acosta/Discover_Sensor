@@ -189,7 +189,7 @@ class MultiDroneEnv(gym.Env):
         ax.set_zlabel('z (m)')
         ax.set_xlim3d(0, info['L'])
         ax.set_ylim3d(0, info['L'])
-        ax.set_zlim3d(0, info['L'] + 1)
+        ax.set_zlim3d(0, info['L']+1)
         ax.view_init(elev=25, azim=-45)
         ax.set_title(f'User connect {users_connect} - Active drones {enable_drones}')
         fig.legend(loc=7, prop={'weight': 'bold', 'size': 14})
