@@ -18,8 +18,8 @@ class Drone:
         forw = 4  # Drone move forward
         back = 5  # Drone move backward
         stop = 6  # Drone not move
-        on = 7  # Drone on
-        off = 8  # Drone off
+        # on = 7  # Drone on
+        # off = 8  # Drone off
 
     def __init__(self, frequency):
         self.pos = []
@@ -73,7 +73,7 @@ class Drone:
         """
         all_pos_x = np.arange(0, 500, 50)
         all_pos_y = np.arange(0, 500, 50)
-        all_pos_z = np.arange(100, 1001, 100)
+        all_pos_z = np.arange(100, 501, 100)
 
         return [all_pos_x, all_pos_y, all_pos_z]
 
@@ -107,11 +107,11 @@ class Drone:
 
         action_correct = self.validate_action(a_selected, obs_state)
 
-        if not self.status_tx:
-            if action_correct != self.actions.stop and action_correct != self.actions.on:
-                action_correct = 6
-            if a_selected != self.actions.stop and a_selected != self.actions.on:
-                a_selected = 6
+        # if not self.status_tx:
+        #     if action_correct != self.actions.stop and action_correct != self.actions.on:
+        #         action_correct = 6
+        #     if a_selected != self.actions.stop and a_selected != self.actions.on:
+        #         a_selected = 6
 
         return action_correct, a_selected
 
@@ -157,11 +157,11 @@ class Drone:
         elif action == self.actions.stop:
             action_back = 6
 
-        elif action == self.actions.off:    # Turn off
-            action_back = action
-
-        elif action == self.actions.on:  # Turn on
-            action_back = action
+        # elif action == self.actions.off:    # Turn off
+        #     action_back = action
+        #
+        # elif action == self.actions.on:  # Turn on
+        #     action_back = action
 
         # elif action == self.actions.change:  # Changed frequency
         #     action_back = action
@@ -224,15 +224,15 @@ class Drone:
             self.distance.horizontal = 50
             self.distance.vertical = 0
 
-        elif value == self.actions.on:
-            self.status_tx = True
-            self.distance.horizontal = 0
-            self.distance.vertical = 0
-
-        elif value == self.actions.off:
-            self.status_tx = False
-            self.distance.horizontal = 0
-            self.distance.vertical = 0
+        # elif value == self.actions.on:
+        #     self.status_tx = True
+        #     self.distance.horizontal = 0
+        #     self.distance.vertical = 0
+        #
+        # elif value == self.actions.off:
+        #     self.status_tx = False
+        #     self.distance.horizontal = 0
+        #     self.distance.vertical = 0
 
         # elif value == self.actions.change:
         #     index = self.all_freq.index(self.freq_tx)
