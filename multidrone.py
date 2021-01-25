@@ -18,9 +18,6 @@ matplotlib.rcParams['ytick.labelsize'] = 'large'
 with open('mapa.pickle', 'rb') as f:
     info = pickle.load(f)
 
-with open('users_d.pickle', 'rb') as f:
-    user_distribution = pickle.load(f)
-
 
 class MultiDroneEnv(gym.Env):
 
@@ -43,6 +40,7 @@ class MultiDroneEnv(gym.Env):
         self._threshold = -3
         self.model_dict = namedtuple('Model', 'energy power time_tx efficiency')
         self.simulation_run = n_run
+        self.info = 'cluster'
 
     def reset(self):
         """
@@ -52,18 +50,20 @@ class MultiDroneEnv(gym.Env):
             States drones
         """
         # temp_position_user = self._create_users
+        with open(f'users_d_{self.info}.pickle', 'rb') as file:
+            user_distribution = pickle.load(file)
+
         temp_position_user = user_distribution[self.simulation_run]
         for index_user in range(self.total_user):
             temp_user = User(name='User_' + str(index_user + 1), init_req_th=0)
             temp_user.position = [temp_position_user[index_user][0], temp_position_user[index_user][1], 0]
             self.user_list.append(temp_user)
 
-        altitude = [400, 500, 600, 700, 800, 900]
         for id_drone, drone in enumerate(self.agents):
             # temp_state = drone.observation_space.sample()
-            drone.position = [250,
-                              250,
-                              altitude[id_drone]]
+            drone.position = [50,
+                              50,
+                              300]
 
         return self._get_obs
 
@@ -127,7 +127,7 @@ class MultiDroneEnv(gym.Env):
 
         limits = np.array([[0, 500],
                            [0, 500],
-                           [200, 1000]])
+                           [100, 501]])
 
         frequency_index = []
         for drone in self.agents:
@@ -168,10 +168,6 @@ class MultiDroneEnv(gym.Env):
             labels_drone.append(label_text)
             users_connect += dron.get_len_users
 
-        for i in range(len(info['pos_eje_x'])):
-            ax.bar3d(info['pos_eje_x'][i], info['pos_eje_y'][i], info['z_altura'][i], info['dx'][i], info['dy'][i],
-                     info['altura'][i], alpha=1, color='w', linewidth=2)
-
         desconectados = set(range(self.total_user))
         lstconected = set(lstconected)
         desconectados = list(desconectados.difference(lstconected))
@@ -193,7 +189,7 @@ class MultiDroneEnv(gym.Env):
         ax.set_zlabel('z (m)')
         ax.set_xlim3d(0, info['L'])
         ax.set_ylim3d(0, info['L'])
-        ax.set_zlim3d(0, 2 * info['L'])
+        ax.set_zlim3d(0, info['L']+1)
         ax.view_init(elev=25, azim=-45)
         ax.set_title(f'User connect {users_connect} - Active drones {enable_drones}')
         fig.legend(loc=7, prop={'weight': 'bold', 'size': 14})
@@ -343,7 +339,7 @@ class MultiDroneEnv(gym.Env):
         term_d = 20
         term_b = 10 * np.log10(np.square(dh) + np.square(dr)) + 20 * np.log10(f_tx) + 20 * np.log10(4 * np.pi / 3e08)
 
-        return (term_c - term_d) / term_a + term_b + term_d
+        return term_b + term_c
 
     def _calc_rsrp(self, drones, distance_2d, f_tx, status_tx):
         """
