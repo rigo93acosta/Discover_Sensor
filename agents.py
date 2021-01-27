@@ -71,9 +71,9 @@ class Drone:
         Returns:
             List values
         """
-        all_pos_x = np.arange(0, 500, 50)
-        all_pos_y = np.arange(0, 500, 50)
-        all_pos_z = np.arange(100, 501, 100)
+        all_pos_x = np.arange(0, 200, 20)
+        all_pos_y = np.arange(0, 200, 20)
+        all_pos_z = np.arange(10, 101, 10)
 
         return [all_pos_x, all_pos_y, all_pos_z]
 
@@ -195,33 +195,33 @@ class Drone:
             self.distance.vertical = 0
 
         elif value == self.actions.up:
-            self.pos[2] += 100
+            self.pos[2] += 10
             self.distance.horizontal = 0
-            self.distance.vertical = 100
+            self.distance.vertical = 10
 
         elif value == self.actions.down:
-            self.pos[2] -= 100
+            self.pos[2] -= 10
             self.distance.horizontal = 0
-            self.distance.vertical = -100
+            self.distance.vertical = -10
 
         elif value == self.actions.right:
-            self.pos[0] += 50
-            self.distance.horizontal = 50
+            self.pos[0] += 20
+            self.distance.horizontal = 20
             self.distance.vertical = 0
 
         elif value == self.actions.left:
-            self.pos[0] -= 50
-            self.distance.horizontal = 50
+            self.pos[0] -= 20
+            self.distance.horizontal = 20
             self.distance.vertical = 0
 
         elif value == self.actions.forw:
-            self.pos[1] += 50
-            self.distance.horizontal = 50
+            self.pos[1] += 20
+            self.distance.horizontal = 20
             self.distance.vertical = 0
 
         elif value == self.actions.back:
-            self.pos[1] -= 50
-            self.distance.horizontal = 50
+            self.pos[1] -= 20
+            self.distance.horizontal = 20
             self.distance.vertical = 0
 
         # elif value == self.actions.on:
