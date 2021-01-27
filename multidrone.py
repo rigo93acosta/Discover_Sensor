@@ -59,11 +59,12 @@ class MultiDroneEnv(gym.Env):
             temp_user.position = [temp_position_user[index_user][0], temp_position_user[index_user][1], 0]
             self.user_list.append(temp_user)
 
+        initial_altitude = [10, 50, 100]
         for id_drone, drone in enumerate(self.agents):
             # temp_state = drone.observation_space.sample()
-            drone.position = [50,
-                              50,
-                              300]
+            drone.position = [100,
+                              100,
+                              np.random.choice(initial_altitude, 1)[0]]
 
         return self._get_obs
 
@@ -125,9 +126,9 @@ class MultiDroneEnv(gym.Env):
 
         ax = fig.gca(projection='3d')
 
-        limits = np.array([[0, 500],
-                           [0, 500],
-                           [100, 501]])
+        limits = np.array([[0, 200],
+                           [0, 200],
+                           [10, 101]])
 
         frequency_index = []
         for drone in self.agents:
@@ -189,7 +190,7 @@ class MultiDroneEnv(gym.Env):
         ax.set_zlabel('z (m)')
         ax.set_xlim3d(0, info['L'])
         ax.set_ylim3d(0, info['L'])
-        ax.set_zlim3d(0, info['L']+1)
+        ax.set_zlim3d(0, 101)
         ax.view_init(elev=25, azim=-45)
         ax.set_title(f'User connect {users_connect} - Active drones {enable_drones}')
         fig.legend(loc=7, prop={'weight': 'bold', 'size': 14})
