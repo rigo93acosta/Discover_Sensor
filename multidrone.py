@@ -62,8 +62,8 @@ class MultiDroneEnv(gym.Env):
         initial_altitude = [10, 50, 100]
         for id_drone, drone in enumerate(self.agents):
             # temp_state = drone.observation_space.sample()
-            drone.position = [10,
-                              10,
+            drone.position = [100,
+                              100,
                               np.random.choice(initial_altitude, 1)[0]]
 
         return self._get_obs
