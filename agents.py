@@ -21,15 +21,18 @@ class Drone:
         # on = 7  # Drone on
         # off = 8  # Drone off
 
-    def __init__(self, frequency):
+    def __init__(self, frequency, step):
         self.pos = []
         self.name = 'Drone'
         self.capacity = 37.5e6 * (1 - 0.1 * np.random.rand())
         self.actual_capacity = 0
-        self.max_capacity = 50
+        self.max_capacity = 25
         self.actions = self.DefaultActions
         self.users = []
         self.shift = []
+        self.altitude = []
+        self.step_amplitude_z = 2
+        self.flag_step = step
         self.battery = 360e03
         self.max_battery = 360e03  # 360 KJ Battery Energy
         self.distance = namedtuple('Distance', ['horizontal', 'vertical'])
@@ -71,9 +74,12 @@ class Drone:
         Returns:
             List values
         """
-        all_pos_x = np.arange(0, 200, 20)
-        all_pos_y = np.arange(0, 200, 20)
-        all_pos_z = np.arange(10, 101, 10)
+        all_pos_x = np.arange(0, 201, 20)
+        all_pos_y = np.arange(0, 201, 20)
+        if self.flag_step == 1:
+            all_pos_z = np.arange(10, 101, 10)
+        elif self.flag_step == 2:
+            all_pos_z = np.arange(20, 101, 20)
 
         return [all_pos_x, all_pos_y, all_pos_z]
 
@@ -135,8 +141,12 @@ class Drone:
                 action_back = 6
 
         elif action == self.actions.down:
-            if now_state[2] == 0:
-                action_back = 6
+            if self.step_amplitude_z == 1:
+                if now_state[2] == 0:
+                    action_back = 6
+            elif self.step_amplitude_z == 2:
+                if now_state[2] == 1:
+                    action_back = 6
 
         elif action == self.actions.right:
             if now_state[0] == max_space_x:
@@ -195,14 +205,14 @@ class Drone:
             self.distance.vertical = 0
 
         elif value == self.actions.up:
-            self.pos[2] += 10
+            self.pos[2] += 10 * self.step_amplitude_z
             self.distance.horizontal = 0
-            self.distance.vertical = 10
+            self.distance.vertical = 10 * self.step_amplitude_z
 
         elif value == self.actions.down:
-            self.pos[2] -= 10
+            self.pos[2] -= 10 * self.step_amplitude_z
             self.distance.horizontal = 0
-            self.distance.vertical = -10
+            self.distance.vertical = -10 * self.step_amplitude_z
 
         elif value == self.actions.right:
             self.pos[0] += 20
@@ -241,7 +251,7 @@ class Drone:
         #     self.freq_tx = self.all_freq[index]
         #     self.distance.horizontal = 0
         #     self.distance.vertical = 0
-
+        self.altitude.append(self.pos[2])
         self.shift.append(value)
 
     def save_best(self):
