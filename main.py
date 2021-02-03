@@ -40,7 +40,9 @@ def send_mail(name_simulation='Test'):
     msg['Subject'] = f'{name_simulation} Simulation End'
     msg.attach(MIMEText("End Simulation"))
     files_list = ['fig_6.pickle', 'fig_11.pickle', 'fig_12.pickle', 'fig_battery.pickle', 'fig_status.pickle',
-                  'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle']
+                  'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle',
+                  'fig_height.pickle']
+
     for f in files_list:
         with open(f, "rb") as fil:
             ext = f.split('.')[-1:]
@@ -98,6 +100,17 @@ def fig_status(total_run):
 
     global_reward = np.stack(global_reward)
     with open('fig_status.pickle', 'wb') as f:
+        pickle.dump([global_reward], f)
+
+
+def fig_height(total_run):
+    global_reward = []
+    for i in range(total_run):
+        a = np.load(f'Run_height_{i}.npz')
+        global_reward.append(a['data'])
+
+    global_reward = np.stack(global_reward)
+    with open('fig_height.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
 
 
@@ -201,13 +214,17 @@ def fig_energy(total_run):
 
 
 def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequency="1e09", mail=False, n_users=200,
-                        weight=1, s_render=0, distribution='cluster'):
+                        weight=1, s_render=0, distribution='cluster', step_z=2):
     """
     Simulation drone environment using Q-Learning
     """
     progress = Progress(time.time())
     frequency_list = [float(item) for item in frequency.split(',')]
-    agents = [Drone(frequency_list) for _ in range(n_agents)]
+    if step_z == 1:
+        agents = [Drone(frequency_list, 1) for _ in range(n_agents)]
+    elif step_z == 2:
+        agents = [Drone(frequency_list, 2) for _ in range(n_agents)]
+
     for index, agent in enumerate(agents):
         agent.name = f'Drone_{index}'
 
@@ -251,6 +268,9 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         drone.save_best()
         
     for episode in range(n_episodes):
+        if step_z == 1 and episode >= 50:
+            for agent in env.agents:
+                agent.step_amplitude_z = 1
         efficiency = []
         for id_drone, drone in enumerate(env.agents):
             for iteration in count():
@@ -366,7 +386,12 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         # env.move_user()  # User movement
 
     # All Episodes End
+    best_pos_height = []
+    for drone in env.agents:
+        best_pos_height.append(drone.save_dict['save_position'][2])
+
     metric.extra_metric(f'{env.dir_sim}', env.agents, n_episodes)
+    metric.save_height = best_pos_height.copy()
     metric.save_metric(run_i)
     show_iter(iter_x_episode, n_episodes, run_i)
     progress.show(time.time(), env.calc_users_connected, run_i)
@@ -382,14 +407,15 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--episodes', help="Number of the episodes.", type=int, default=10)
     parser.add_argument('-r', '--run', help="Number of the independent run.", type=int, default=1)
     parser.add_argument('-g', '--greedy', help="Use e-greedy or e-greedy with decay", type=float, default=0.5)
-    parser.add_argument('-d', '--drone', help="Number of drones", type=int, default=3)
-    parser.add_argument('-u', '--users', help="Number of users", type=int, default=30)
+    parser.add_argument('-d', '--drone', help="Number of drones", type=int, default=10)
+    parser.add_argument('-u', '--users', help="Number of users", type=int, default=200)
     parser.add_argument('-m', '--mail', help='Send mail when simulation is end', type=int, default=0)
     parser.add_argument('-wu', '--weight_user', help='Weight for users', type=int, default=1)
     parser.add_argument('-wd', '--weight_drone', help='Weight for drones', type=int, default=1)
     parser.add_argument('-wc', '--weight_connection', help='Weight for connection', type=int, default=1)
     parser.add_argument('-f', '--frequency', help="List with operations frequencies", type=str, default="1e09")
     parser.add_argument('-t', '--thread', help='Number thread', type=int, default=1)
+    parser.add_argument('-ls', '--length_step', help='Length step on coord Z', type=int, default=2)
     parser.add_argument('-s', '--show', help='Show render environment', type=int, default=0)
     parser.add_argument('-i', '--info', help="Name of an environment", default='cluster')
     args = parser.parse_args()
@@ -420,7 +446,7 @@ if __name__ == '__main__':
 
     Parallel(n_jobs=args.thread)(delayed(function_simulation)(i, args.episodes, args.greedy, args.drone, args.frequency,
                                                               args.mail, args.users, weight_parser,
-                                                              args.show, args.info)
+                                                              args.show, args.info, args.length_step)
                                  for i in range(args.run))
 
     fig_6(args.run)
@@ -433,6 +459,7 @@ if __name__ == '__main__':
     fig_time(args.run)
     fig_battery(args.run)
     fig_actions(args.run)
+    fig_height(args.run)
 
     frames_path = 'Run_{i}/Episode_{j}.png'
     vid_name = 'Run_{i}/Run_{i}.mp4'
