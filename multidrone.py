@@ -41,6 +41,7 @@ class MultiDroneEnv(gym.Env):
         self.model_dict = namedtuple('Model', 'energy power time_tx efficiency')
         self.simulation_run = n_run
         self.info = 'cluster'
+        self.angle_aperture = 60
 
     def reset(self):
         """
@@ -59,12 +60,13 @@ class MultiDroneEnv(gym.Env):
             temp_user.position = [temp_position_user[index_user][0], temp_position_user[index_user][1], 0]
             self.user_list.append(temp_user)
 
-        initial_altitude = [10, 50, 100]
+        initial_altitude = [[40, 40, 100], [40, 140, 100], [100, 100, 100], [140, 40, 100], [140, 140, 100],
+                            [40, 100, 60], [100, 40, 60], [100, 100, 60], [100, 140, 60], [140, 100, 60]]
         for id_drone, drone in enumerate(self.agents):
             # temp_state = drone.observation_space.sample()
-            drone.position = [100,
-                              100,
-                              np.random.choice(initial_altitude, 1)[0]]
+            drone.position = [initial_altitude[id_drone][0],
+                              initial_altitude[id_drone][1],
+                              initial_altitude[id_drone][2]]
 
         return self._get_obs
 
@@ -126,8 +128,8 @@ class MultiDroneEnv(gym.Env):
 
         ax = fig.gca(projection='3d')
 
-        limits = np.array([[0, 200],
-                           [0, 200],
+        limits = np.array([[0, 201],
+                           [0, 201],
                            [10, 101]])
 
         frequency_index = []
@@ -136,7 +138,8 @@ class MultiDroneEnv(gym.Env):
 
         for id_d, dron in enumerate(self.agents):
             if dron.status_tx:
-                c1 = self.get_circle(x=[dron.pos[0], dron.pos[1], 0], r=dron.pos[2] * np.tan(np.deg2rad(60 / 2)))
+                c1 = self.get_circle(x=[dron.pos[0], dron.pos[1], 0],
+                                     r=dron.pos[2] * np.tan(np.deg2rad(self.angle_aperture / 2)))
                 _, c3 = self.cut_circle(c1, limits=limits)
                 if len(c3) != 0:
                     ax.plot(*c3.T, c=self._set_colors(id_d), lw=3, ls='-')
@@ -354,7 +357,7 @@ class MultiDroneEnv(gym.Env):
 
         # Equation 7 in the paper.
         eirp = -3  # -3 dBW
-        dron_rc = drones[:, 2] * np.tan(np.deg2rad(60 / 2))  # Radio coverage all drones
+        dron_rc = drones[:, 2] * np.tan(np.deg2rad(self.angle_aperture / 2))  # Radio coverage all drones
         dist_drones = distance_2d[:, :len(self.agents)]
         drones_altura = drones[:len(self.agents), 2]
         result_loss = eirp - self._loss_path_average(dist_drones, drones_altura, self.val_a, self.val_b, f_tx)
