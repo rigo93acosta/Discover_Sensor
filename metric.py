@@ -19,6 +19,7 @@ class Metric:
         self.save_battery = []
         self.actions_name = actions
         self.save_actions = []
+        self.save_height = []
 
     @staticmethod
     def calc_drone_ran(drones):
@@ -113,6 +114,7 @@ class Metric:
         np.savez(f'Run_time_{run_i}', data=self.save_time_tx)
         np.savez(f'Run_battery_{run_i}', data=self.save_battery)
         np.savez(f'Run_actions_{run_i}', data=self.save_actions)
+        np.savez(f'Run_height_{run_i}', data=self.save_height)
 
     def extra_metric(self, chapter, drones, n_episodes):
 
