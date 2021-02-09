@@ -41,7 +41,7 @@ def send_mail(name_simulation='Test'):
     msg.attach(MIMEText("End Simulation"))
     files_list = ['fig_6.pickle', 'fig_11.pickle', 'fig_12.pickle', 'fig_battery.pickle', 'fig_status.pickle',
                   'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle',
-                  'fig_height.pickle']
+                  'fig_height.pickle', 'info.pickle']
 
     for f in files_list:
         with open(f, "rb") as fil:
@@ -213,6 +213,19 @@ def fig_energy(total_run):
         pickle.dump([global_reward], f)
 
 
+def compress_info(total_run):
+    global_reward = []
+    for i in range(total_run):
+        with open(f'Run_info_{i}.pickle', 'rb') as f:
+            info = pickle.load(f)
+        global_reward.append(info[0])
+        os.remove(f'Run_info_{i}.pickle')
+
+    global_reward = np.stack(global_reward)
+    with open('info.pickle', 'wb') as f:
+        pickle.dump([global_reward], f)
+
+
 def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequency="1e09", mail=False, n_users=200,
                         weight=1, s_render=0, distribution='cluster', step_z=2):
     """
@@ -377,14 +390,19 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
         # env.move_user()  # User movement
 
     # All Episodes End
+    info_drone = []
     best_pos_height = []
     for drone in env.agents:
         best_pos_height.append(drone.save_dict['save_position'][2])
+        info_drone.append({'position': drone.position,
+                           'users_id': drone.users})
 
     metric.extra_metric(f'{env.dir_sim}', env.agents, n_episodes)
     metric.save_height = best_pos_height.copy()
     metric.save_metric(run_i)
     show_iter(iter_x_episode, n_episodes, run_i)
+    with open(f'Run_info_{run_i}.pickle', 'wb') as f:
+        pickle.dump([info_drone], f)
     progress.show(time.time(), env.calc_users_connected, run_i)
     if mail:
         if run_i % 10 == 0:
@@ -450,6 +468,7 @@ if __name__ == '__main__':
     fig_battery(args.run)
     fig_actions(args.run)
     fig_height(args.run)
+    compress_info(args.run)
 
     frames_path = 'Run_{i}/Episode_{j}.png'
     vid_name = 'Run_{i}/Run_{i}.mp4'
