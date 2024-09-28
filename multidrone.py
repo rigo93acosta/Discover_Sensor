@@ -7,6 +7,7 @@ import matplotlib
 import gym
 from collections import namedtuple
 from e_model import EnergyModel
+import logging
 
 matplotlib.use("Agg")
 matplotlib.rcParams['axes.labelsize'] = 16
