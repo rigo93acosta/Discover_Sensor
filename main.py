@@ -4,6 +4,7 @@ import argparse
 from shutil import copy
 from operator import itemgetter
 from itertools import count
+import logging
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -218,6 +219,8 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     """
     Simulation drone environment using Q-Learning
     """
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
+
     progress = Progress(time.time())
     frequency_list = [float(item) for item in frequency.split(',')]
     if step_z == 1:
@@ -433,6 +436,7 @@ if __name__ == '__main__':
         print(f'\nActive e-greedy {args.greedy}')
 
     np.seterr(divide='ignore', invalid='ignore')
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
     main_chapter = os.getcwd()
     try:
@@ -467,10 +471,10 @@ if __name__ == '__main__':
     if args.show:
         for i in range(args.run):
             with imageio.get_writer(vid_name.format(i=i), format='FFMPEG', mode='I', fps=1) as writer:
-                writer.append_data(imageio.imread(frames_path.format(i=i, j=0)))
+                writer.append_data(imageio.v2.imread(frames_path.format(i=i, j=0)))
                 for j in range(args.episodes):
                     if j % 10 == 0 or j == args.episodes - 1:
-                        writer.append_data(imageio.imread(frames_path.format(i=i, j=j + 1)))
+                        writer.append_data(imageio.v2.imread(frames_path.format(i=i, j=j + 1)))
 
         for i in range(args.run):
             os.remove(frames_path.format(i=i, j=0))
