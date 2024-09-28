@@ -4,6 +4,7 @@ import argparse
 from shutil import copy
 from operator import itemgetter
 from itertools import count
+import logging
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -432,6 +433,7 @@ if __name__ == '__main__':
         print(f'\nActive e-greedy {args.greedy}')
 
     np.seterr(divide='ignore', invalid='ignore')
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
     main_chapter = os.getcwd()
     try:
