@@ -126,7 +126,7 @@ class MultiDroneEnv(gym.Env):
         split_array = np.hsplit(user_array, 3)
         user_x, user_y, user_z = split_array[0], split_array[1], split_array[2]
 
-        ax = fig.gca(projection='3d')
+        ax = fig.add_subplot(projection='3d')
 
         limits = np.array([[0, 201],
                            [0, 201],
