@@ -478,10 +478,10 @@ if __name__ == '__main__':
     if args.show:
         for i in range(args.run):
             with imageio.get_writer(vid_name.format(i=i), format='FFMPEG', mode='I', fps=1) as writer:
-                writer.append_data(imageio.imread(frames_path.format(i=i, j=0)))
+                writer.append_data(imageio.v2.imread(frames_path.format(i=i, j=0)))
                 for j in range(args.episodes):
                     if j % 10 == 0 or j == args.episodes - 1:
-                        writer.append_data(imageio.imread(frames_path.format(i=i, j=j + 1)))
+                        writer.append_data(imageio.v2.imread(frames_path.format(i=i, j=j + 1)))
 
         for i in range(args.run):
             os.remove(frames_path.format(i=i, j=0))
