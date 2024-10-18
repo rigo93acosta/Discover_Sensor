@@ -5,12 +5,6 @@ from shutil import copy
 from operator import itemgetter
 from itertools import count
 import logging
-
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
-from os.path import basename
-import smtplib
 import time
 
 import imageio
@@ -32,48 +26,6 @@ class Progress:
         print(f'End Run {n_sim:2d} -- Time:{(time_now - self.initial_time):.2f} '
               f's -- Users Connected {users}')
 
-
-def send_mail(name_simulation='Test'):
-    msg = MIMEMultipart()
-    msg['From'] = "riacosta@uclv.cu"
-    # msg['To'] = ', '.join('riacosta@uclv.cu')
-    msg['To'] = 'riacosta@uclv.cu'
-    msg['Subject'] = f'{name_simulation} Simulation End'
-    msg.attach(MIMEText("End Simulation"))
-    files_list = ['fig_6.pickle', 'fig_11.pickle', 'fig_12.pickle', 'fig_battery.pickle', 'fig_status.pickle',
-                  'fig_efficiency.pickle', 'fig_energy.pickle', 'fig_power.pickle', 'fig_time.pickle',
-                  'fig_height.pickle', 'info.pickle']
-
-    for f in files_list:
-        with open(f, "rb") as fil:
-            ext = f.split('.')[-1:]
-            # noinspection PyTypeChecker
-            attached_file = MIMEApplication(fil.read(), _subtype=ext)
-            attached_file.add_header(
-                'content-disposition', 'attachment', filename=basename(f))
-        msg.attach(attached_file)
-
-    server = smtplib.SMTP('mta.uclv.edu.cu', 587)
-    server.starttls()
-    server.login("riacosta@uclv.cu", "rigo1993.")
-    server.sendmail("riacosta@uclv.cu", "riacosta@uclv.cu", msg.as_string())
-    server.quit()
-
-
-def mail_end_episode(number_episode=0):
-    msg = MIMEMultipart()
-    msg['From'] = "riacosta@uclv.cu"
-    # msg['To'] = ', '.join('riacosta@uclv.cu')
-    msg['To'] = 'riacosta@uclv.cu'
-    msg['Subject'] = f'Simulation_{number_episode} End'
-    msg.attach(MIMEText(f"End Simulation_{number_episode}"))
-    server = smtplib.SMTP('mta.uclv.edu.cu', 587)
-    server.starttls()
-    server.login("riacosta@uclv.cu", "rigo1993.")
-    server.sendmail("riacosta@uclv.cu", "riacosta@uclv.cu", msg.as_string())
-    server.quit()
-
-
 def show_iter(values_iter, n_episode, val_i):
     """
     The number of iterations are show for each episode
@@ -92,7 +44,6 @@ def show_iter(values_iter, n_episode, val_i):
     plt.savefig(f'Iter_x_Episode_{val_i}.png', dpi=100)
     plt.close()
 
-
 def fig_status(total_run):
     global_reward = []
     for i in range(total_run):
@@ -102,7 +53,6 @@ def fig_status(total_run):
     global_reward = np.stack(global_reward)
     with open('fig_status.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
-
 
 def fig_height(total_run):
     global_reward = []
@@ -114,7 +64,6 @@ def fig_height(total_run):
     with open('fig_height.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
 
-
 def fig_actions(total_run):
     global_reward = []
     for i in range(total_run):
@@ -124,7 +73,6 @@ def fig_actions(total_run):
     global_reward = np.stack(global_reward)
     with open('fig_actions.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
-
 
 def fig_6(total_run):
     global_reward = []
@@ -136,7 +84,6 @@ def fig_6(total_run):
     with open('fig_6.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
 
-
 def fig_efficiency(total_run):
     global_reward = []
     for i in range(total_run):
@@ -146,7 +93,6 @@ def fig_efficiency(total_run):
     global_reward = np.stack(global_reward)
     with open('fig_efficiency.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
-
 
 def fig_11(total_run):
     global_reward = []
@@ -158,7 +104,6 @@ def fig_11(total_run):
     with open('fig_11.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
 
-
 def fig_12(total_run):
     global_reward = []
     for i in range(total_run):
@@ -168,7 +113,6 @@ def fig_12(total_run):
     global_reward = np.stack(global_reward)
     with open('fig_12.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
-
 
 def fig_time(total_run):
     global_reward = []
@@ -180,7 +124,6 @@ def fig_time(total_run):
     with open('fig_time.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
 
-
 def fig_battery(total_run):
     global_reward = []
     for i in range(total_run):
@@ -190,7 +133,6 @@ def fig_battery(total_run):
     global_reward = np.stack(global_reward)
     with open('fig_battery.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
-
 
 def fig_power(total_run):
     global_reward = []
@@ -202,7 +144,6 @@ def fig_power(total_run):
     with open('fig_power.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
 
-
 def fig_energy(total_run):
     global_reward = []
     for i in range(total_run):
@@ -212,7 +153,6 @@ def fig_energy(total_run):
     global_reward = np.stack(global_reward)
     with open('fig_energy.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
-
 
 def compress_info(total_run):
     global_reward = []
@@ -226,8 +166,7 @@ def compress_info(total_run):
     with open('info.pickle', 'wb') as f:
         pickle.dump([global_reward], f)
 
-
-def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequency="1e09", mail=False, n_users=200,
+def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequency="1e09", n_users=200,
                         weight=1, s_render=0, distribution='cluster', step_z=2):
     """
     Simulation drone environment using Q-Learning
@@ -405,9 +344,6 @@ def function_simulation(run_i=0, n_episodes=5, ep_greedy=0, n_agents=16, frequen
     with open(f'Run_info_{run_i}.pickle', 'wb') as f:
         pickle.dump([info_drone], f)
     progress.show(time.time(), env.calc_users_connected, run_i)
-    if mail:
-        if run_i % 10 == 0:
-            mail_end_episode(run_i)
 
 
 if __name__ == '__main__':
@@ -419,7 +355,6 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--greedy', help="Use e-greedy or e-greedy with decay", type=float, default=0.5)
     parser.add_argument('-d', '--drone', help="Number of drones", type=int, default=10)
     parser.add_argument('-u', '--users', help="Number of users", type=int, default=200)
-    parser.add_argument('-m', '--mail', help='Send mail when simulation is end', type=int, default=0)
     parser.add_argument('-wu', '--weight_user', help='Weight for users', type=int, default=1)
     parser.add_argument('-wd', '--weight_drone', help='Weight for drones', type=int, default=1)
     parser.add_argument('-wc', '--weight_connection', help='Weight for connection', type=int, default=1)
@@ -456,7 +391,7 @@ if __name__ == '__main__':
     copy(main_chapter + f'/users_d_{args.info}.pickle', now_chapter + f'/users_d_{args.info}.pickle')
 
     Parallel(n_jobs=args.thread)(delayed(function_simulation)(i, args.episodes, args.greedy, args.drone, args.frequency,
-                                                              args.mail, args.users, weight_parser, 
+                                                              args.users, weight_parser, 
                                                               args.show, args.info, args.length_step)
                                  for i in range(args.run))
     fig_6(args.run)
@@ -500,6 +435,3 @@ if __name__ == '__main__':
 
     for file in lstFiles:
         os.remove(file)
-
-    if args.mail:
-        send_mail(args.name)
